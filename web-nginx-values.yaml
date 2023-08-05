@@ -1,0 +1,40 @@
+image: 
+  registry: docker.io
+  repository: serialt/web-nginx
+  tag: v1
+  pullSecrets: ["default-secret"]
+resources:
+  limits:
+    cpu: 100m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 128Mi
+# set nginx run daemon with root
+# containerSecurityContext:
+#   enabled: true
+#   runAsUser: 0
+#   runAsNonRoot: false
+service:
+  type: ClusterIP
+serverBlock: |-
+
+  server {
+      listen 8080;
+      server_name web.c.cc;
+
+      charset utf-8;
+      auth_basic "auth for web";  #这里是验证时的提示信息
+      auth_basic_user_file /opt/web/auth.conf;
+      gzip on;
+      gzip_min_length 1K;
+      gzip_comp_level 4;
+      gzip_buffers 32 4K;
+      gzip_types text/plain application/javascript application/x-javascript text/css application/xml text/javascript application/x-httpd-php image/jpeg image/gif image/png;
+      gzip_vary on;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomians;proload" always;
+      root /opt/web/frontend;
+      index index.html index.htm;
+      try_files $uri $uri/ /index.html;
+      client_max_body_size  20m;
+  }
